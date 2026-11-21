@@ -1,5 +1,23 @@
-import{readdirSync as R,readFileSync as F,mkdirSync as M,writeFileSync as W}from'node:fs';
+import fs from'fs';
 const{MAKEFUN_INPUT_DIR:I,MAKEFUN_OUTPUT_DIR:O}=process.env;
-let H,D,a;
-function S(g,b,p){let Q=[b],P=[p],N=[''],ix={},x,j,y,d,c,i,t,nb,k,wk,mv;for(let h=0,bx;bx=Q[h];h++){let R0=new Int8Array(a.length),q=[P[h]];R0[P[h]]=1;for(x of q)for(j=0;j<4;j++){y=x+D[j];if(!a[y]&&!bx.includes(y)&&!R0[y]){R0[y]=j+1;q.push(y)}};for(i in bx){c=bx[i];for(j in D){d=D[j];t=c+d;if(!R0[c-d]||a[t]||bx.includes(t))continue;nb=[...bx];nb[i]=t;nb.sort((x,y)=>x-y);k=c+':'+nb;if(ix[k])continue;ix[k]=1;wk='';for(x=c-d;x!=P[h];x-=D[R0[x]-1])wk='udlr'[R0[x]-1]+wk;mv=N[h]+wk+'UDLR'[j];if(nb+''==g)return[mv,c];Q.push(nb);P.push(c);N.push(mv)}}}return null}
-for(let id of R(I).sort()){let t=F(I+'/'+id+'/level.txt','utf8');H=t.indexOf('\n')+1;D=[-H,H,-1,1];a=new Uint8Array(t.length);let g=[],b=[],pl=-1;for(let i=0,c;c=t[i];i++){a[i]=c=='#';if('.*+'.includes(c))g.push(i);if('$*'.includes(c))b.push(i);if('@+'.includes(c))pl=i}let e=(pl/H)|0,mv='',y,d,z;while(b.length){let x=b[0],q=new Set([x]);for(y of q)for(d of D){z=y+d;if(!a[z]&&!q.has(z)&&(z/H|0)!=e)q.add(z)}let Y=g.filter(y=>q.has(y)),X=b.filter(y=>q.has(y)),r=S(Y,X,pl);if(!r)break;mv+=r[0];pl=r[1];Y.map(y=>a[y]=1);b=b.filter(y=>!q.has(y))}let o=O+'/'+id;M(o);W(o+'/solution.txt',mv)}
+for(let id of fs.readdirSync(I)){
+let o=fs.readFileSync(I+'/'+id+'/level.txt','utf8'),H=o.indexOf('\n')+1,D=[-H,H,-1,1],p=o.search(/[@+]/),s=o.replace('@',' ').replace('+','.');
+let e=(p/H)|0,k=i=>((i/H|0)>e)*2+(i%H>6),mv='',i;
+while(s.includes('$')){
+let K=k(s.indexOf('$')),Y=[];
+for(i in s)if(k(i)==K&&'.*'.includes(s[i]))Y.push(i);
+let Q=[[s,p,'']],V=new Set,f=0;
+for(let h=0;h<Q.length&&!f;h++){
+let[S,P,M]=Q[h],A=[],q=[P],l=P;A[P]='';
+for(let x of q){if(x<l)l=x;for(let j=0;j<4;j++){let y=x+D[j];if(' .'.includes(S[y])&&A[y]==null){A[y]=A[x]+'udlr'[j];q.push(y)}}}
+let w=S+l;if(V.has(w))continue;V.add(w);
+for(let x of q){if(f)break;for(let j=0;j<4;j++){let y=x+D[j],u=y+D[j];
+if(!'$*'.includes(S[y])||k(y)!=K||!' .'.includes(S[u]))continue;
+let a=[...S];a[y]=' .'[S[y]=='*'|0];a[u]='$*'[S[u]=='.'|0];let T=a.join(''),N=M+A[x]+'UDLR'[j];
+if(Y.every(z=>T[z]=='*')){mv+=N;p=y;s=T;f=1;break}
+Q.push([T,y,N])}}
+}
+if(!f)break;
+}
+let d=O+'/'+id;fs.mkdirSync(d);fs.writeFileSync(d+'/solution.txt',mv);
+}
